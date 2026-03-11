@@ -42,9 +42,9 @@ export default function StepConnector({ stepStartedAt, done }: StepConnectorProp
   return (
     <div
       className="flex items-center justify-center shrink-0"
-      style={{ width: 24, height: 24, paddingLeft: 48, paddingRight: 48 }}
+      style={{ width: 24, height: 24 }}
     >
-      <div className="flex flex-col items-start shrink-0" style={{ gap: 3, width: 2 }}>
+      <div className="flex flex-col items-center shrink-0" style={{ gap: 3, width: 1 }}>
         {Array.from({ length: NUM_DASHES }, (_, i) => {
           const isFilled = i < filledCount;
           const color = done ? "#8eeda0" : isFilled ? "#ffffff" : "rgba(255,255,255,0.2)";
