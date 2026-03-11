@@ -13,9 +13,9 @@
   margin: 0;
 }
 
-@keyframes shimmer {
-  0%   { background-position: 150% 0; }
-  100% { background-position: -150% 0; }
+@keyframes shimmer-once {
+  0%   { background-position: -100% 0; }
+  100% { background-position: 100% 0; }
 }
 
 html,

@@ -5,7 +5,7 @@ import { motion, LayoutGroup } from "motion/react";
 import AgenticLoader from "./AgenticLoader";
 import CheckIcon from "./CheckIcon";
 import StepConnector from "./StepConnector";
-import ShimmerText from "./ShimmerText";
+import MatrixScrambleText from "./MatrixScrambleText";
 
 const STEPS = [
   "Gathering information",
@@ -22,7 +22,7 @@ interface StepState {
   startedAt: number | null;
 }
 
-const PHASE_DURATION_MS = 5000;
+const PHASE_DURATION_MS = 2000; // type + shimmer once
 const INITIAL_DELAY_MS = 1500;
 const STEP_DELAYS_MS = STEPS.map((_, i) => INITIAL_DELAY_MS + PHASE_DURATION_MS * i);
 const COMPLETE_AT_MS = STEP_DELAYS_MS[STEPS.length - 1] + PHASE_DURATION_MS;
@@ -46,11 +46,12 @@ function StepRow({ label, status, prevStatus, prevStartedAt, showConnector }: St
 
   return (
     <motion.div
-      layout
+      layout="position"
       className="flex flex-col items-start shrink-0 w-full"
-      initial={{ opacity: 0, y: 8 }}
+      style={{ gap: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+      transition={{ duration: 0.55, ease: [0.32, 0.72, 0, 1] }}
     >
       {showConnector && (
         <StepConnector
@@ -64,9 +65,9 @@ function StepRow({ label, status, prevStatus, prevStartedAt, showConnector }: St
         ) : (
           <AgenticLoader active={isActive} />
         )}
-        <ShimmerText active={isActive} done={isDone}>
+        <MatrixScrambleText active={isActive} done={isDone}>
           {label}
-        </ShimmerText>
+        </MatrixScrambleText>
       </div>
     </motion.div>
   );
@@ -104,7 +105,7 @@ export default function LoadingSyncAnimation() {
       }, COMPLETE_AT_MS)
     );
 
-    timers.push(setTimeout(() => setFading(true), RESET_AFTER_MS - 800));
+    timers.push(setTimeout(() => setFading(true), RESET_AFTER_MS - 150));
     timers.push(
       setTimeout(() => {
         setStepStates(getInitialStates());
@@ -128,7 +129,7 @@ export default function LoadingSyncAnimation() {
       <motion.div
         className="relative flex items-center justify-center"
         animate={{ opacity: fading ? 0 : 1 }}
-        transition={{ duration: 0.8, ease: "easeInOut" }}
+        transition={{ duration: 0 }}
         style={{
           width: 420,
           height: 420,
@@ -143,10 +144,10 @@ export default function LoadingSyncAnimation() {
         */}
         <LayoutGroup>
           <motion.div
-            layout
+            layout="position"
             className="flex flex-col items-start"
-            style={{ width: 222 }}
-            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{ width: 222, gap: 8 }}
+            transition={{ duration: 0.55, ease: [0.32, 0.72, 0, 1] }}
           >
             {visibleSteps.map((s) => {
               const prevState = s.index > 0 ? stepStates[s.index - 1] : null;

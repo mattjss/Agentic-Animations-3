@@ -47,9 +47,9 @@ export default function AgenticLoader({ active = true }: AgenticLoaderProps) {
                   duration: DURATION_S,
                   repeat: Infinity,
                   delay: (i * STAGGER_MS) / 1000,
-                  ease: "easeInOut",
+                  ease: [0.4, 0, 0.2, 1],
                 }
-              : { duration: 0.3 }
+              : { duration: 0.35, ease: [0.4, 0, 0.2, 1] }
           }
         />
       ))}

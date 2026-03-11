@@ -29,7 +29,7 @@ export default function CheckIcon({ visible = true }: CheckIconProps) {
           strokeLinejoin="round"
           initial={{ pathLength: 0 }}
           animate={visible ? { pathLength: 1 } : { pathLength: 0 }}
-          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1], delay: 0.05 }}
+          transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1], delay: 0.08 }}
         />
       </motion.svg>
     </div>

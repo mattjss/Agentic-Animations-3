@@ -11,7 +11,7 @@ interface StepConnectorProps {
 }
 
 const NUM_DASHES = 4;
-const DASH_INTERVAL_MS = 1250; // 4 dashes over 5s
+const DASH_INTERVAL_MS = 500; // 4 dashes over ~2s
 
 export default function StepConnector({ stepStartedAt, done }: StepConnectorProps) {
   const [filledCount, setFilledCount] = useState(0);
@@ -53,7 +53,7 @@ export default function StepConnector({ stepStartedAt, done }: StepConnectorProp
             <motion.div
               key={i}
               className="shrink-0 rounded-sm"
-              style={{ width: 1, height: 3 }}
+              style={{ width: 1, height: 3, transformOrigin: "center" }}
               initial={{ opacity: 0, scaleY: 0 }}
               animate={{
                 opacity: stepStartedAt !== null ? 1 : 0,
@@ -61,9 +61,9 @@ export default function StepConnector({ stepStartedAt, done }: StepConnectorProp
                 backgroundColor: color,
               }}
               transition={{
-                opacity:         { duration: 0.25, delay: i * 0.06, ease: "easeOut" },
-                scaleY:          { duration: 0.25, delay: i * 0.06, ease: "easeOut" },
-                backgroundColor: { duration: 0.4, ease: "easeInOut" },
+                opacity:         { duration: 0.35, delay: i * 0.05, ease: [0.32, 0.72, 0, 1] },
+                scaleY:          { duration: 0.35, delay: i * 0.05, ease: [0.32, 0.72, 0, 1] },
+                backgroundColor: { duration: 0.5, ease: [0.4, 0, 0.2, 1] },
               }}
             />
           );
