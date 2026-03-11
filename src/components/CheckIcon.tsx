@@ -17,8 +17,9 @@ export default function CheckIcon({ visible = true }: CheckIconProps) {
         xmlns="http://www.w3.org/2000/svg"
         className="absolute"
         style={{ left: "12.5%", top: "20.83%" }}
-        initial={{ pathLength: 0, opacity: 0 }}
+        initial={{ opacity: 0 }}
         animate={visible ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.2 }}
       >
         <motion.path
           d="M1.5 7L6.5 12L16.5 2"
@@ -28,7 +29,7 @@ export default function CheckIcon({ visible = true }: CheckIconProps) {
           strokeLinejoin="round"
           initial={{ pathLength: 0 }}
           animate={visible ? { pathLength: 1 } : { pathLength: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1], delay: 0.05 }}
         />
       </motion.svg>
     </div>

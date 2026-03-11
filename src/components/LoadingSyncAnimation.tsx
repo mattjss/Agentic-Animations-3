@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, LayoutGroup } from "motion/react";
 import AgenticLoader from "./AgenticLoader";
 import CheckIcon from "./CheckIcon";
 import StepConnector from "./StepConnector";
@@ -18,59 +18,63 @@ type StepStatus = "pending" | "active" | "done";
 
 interface StepState {
   status: StepStatus;
+  startedAt: number | null;
 }
 
-/**
- * Timing: each step becomes active after a staggered delay.
- * Steps 0–3 animate in, step 4 (Complete) is the final state.
- * Total sequence: ~1.5s start delay, then ~0.8s per step.
- */
-const STEP_DELAYS_MS = [1500, 2800, 4100, 5400, 6700];
+const PHASE_DURATION_MS = 4000;
+const INITIAL_DELAY_MS = 1500;
+const STEP_DELAYS_MS = STEPS.map((_, i) => INITIAL_DELAY_MS + PHASE_DURATION_MS * i);
+const COMPLETE_AT_MS = STEP_DELAYS_MS[STEPS.length - 1] + PHASE_DURATION_MS;
+const RESET_AFTER_MS = COMPLETE_AT_MS + 6000;
 
 function getInitialStates(): StepState[] {
-  return STEPS.map(() => ({ status: "pending" as StepStatus }));
+  return STEPS.map(() => ({ status: "pending", startedAt: null }));
 }
 
 interface StepRowProps {
   label: string;
   status: StepStatus;
-  showConnectorAbove: boolean;
-  connectorColor: "green" | "white";
-  index: number;
+  prevStatus: StepStatus;
+  prevStartedAt: number | null;
+  showConnector: boolean;
 }
 
-function StepRow({ label, status, showConnectorAbove, connectorColor, index }: StepRowProps) {
+function StepRow({ label, status, prevStatus, prevStartedAt, showConnector }: StepRowProps) {
   const isActive = status === "active";
   const isDone = status === "done";
-  const isVisible = isActive || isDone;
 
   return (
     <motion.div
+      layout
       className="flex flex-col items-start shrink-0 w-full"
       initial={{ opacity: 0, y: 8 }}
-      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
-      transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
     >
-      {showConnectorAbove && (
-        <StepConnector color={connectorColor} visible={isVisible} />
+      {showConnector && (
+        <StepConnector
+          stepStartedAt={prevStartedAt}
+          done={isDone && prevStatus === "done"}
+        />
       )}
-      <div className="flex items-center gap-4 shrink-0 w-full">
+      <div className="flex items-center shrink-0 w-full" style={{ gap: 16 }}>
         {isDone ? (
-          <CheckIcon visible={isDone} />
+          <CheckIcon visible={true} />
         ) : (
           <AgenticLoader active={isActive} />
         )}
-        <p
-          className="shrink-0 whitespace-nowrap text-sm leading-5 not-italic"
+        <motion.p
+          className="shrink-0 whitespace-nowrap not-italic"
           style={{
             fontFamily: "'Fragment Mono', monospace",
             fontSize: 14,
             lineHeight: "20px",
-            color: isDone ? "#8eeda0" : "#ffffff",
           }}
+          animate={{ color: isDone ? "#8eeda0" : "#ffffff" }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
         >
           {label}
-        </p>
+        </motion.p>
       </div>
     </motion.div>
   );
@@ -78,92 +82,101 @@ function StepRow({ label, status, showConnectorAbove, connectorColor, index }: S
 
 export default function LoadingSyncAnimation() {
   const [stepStates, setStepStates] = useState<StepState[]>(getInitialStates());
-  const [hasStarted, setHasStarted] = useState(false);
+  const [cycle, setCycle] = useState(0);
+  const [fading, setFading] = useState(false);
 
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     STEP_DELAYS_MS.forEach((delay, i) => {
-      // Activate step i
       timers.push(
         setTimeout(() => {
-          setHasStarted(true);
+          const now = Date.now();
           setStepStates((prev) => {
             const next = [...prev];
-            // Mark previous step as done
-            if (i > 0) {
-              next[i - 1] = { status: "done" };
-            }
-            next[i] = { status: "active" };
+            if (i > 0) next[i - 1] = { ...next[i - 1], status: "done" };
+            next[i] = { status: "active", startedAt: now };
             return next;
           });
         }, delay)
       );
     });
 
-    // After last step activates, mark it done too
     timers.push(
       setTimeout(() => {
         setStepStates((prev) => {
           const next = [...prev];
-          next[STEPS.length - 1] = { status: "done" };
+          next[STEPS.length - 1] = { ...next[STEPS.length - 1], status: "done" };
           return next;
         });
-      }, STEP_DELAYS_MS[STEPS.length - 1] + 800)
+      }, COMPLETE_AT_MS)
+    );
+
+    timers.push(setTimeout(() => setFading(true), RESET_AFTER_MS - 800));
+    timers.push(
+      setTimeout(() => {
+        setStepStates(getInitialStates());
+        setFading(false);
+        setCycle((c) => c + 1);
+      }, RESET_AFTER_MS)
     );
 
     return () => timers.forEach(clearTimeout);
-  }, []);
+  }, [cycle]);
 
-  const visibleSteps = stepStates.filter((s) => s.status !== "pending");
+  const visibleSteps = stepStates
+    .map((s, i) => ({ ...s, index: i }))
+    .filter((s) => s.status !== "pending");
 
   return (
     <div
       className="relative flex items-center justify-center"
       style={{ width: 800, height: 800, backgroundColor: "#000000" }}
     >
-      {/* Card */}
-      <div
+      <motion.div
         className="relative flex items-center justify-center"
+        animate={{ opacity: fading ? 0 : 1 }}
+        transition={{ duration: 0.8, ease: "easeInOut" }}
         style={{
           width: 420,
           height: 420,
-          backgroundColor: "#070707",
+          backgroundColor: "#000000",
           border: "1px solid #111111",
           borderRadius: 16,
         }}
       >
-        {/* Step list — centered in card */}
-        <div
-          className="flex flex-col items-start"
-          style={{ gap: 0, width: 222 }}
-        >
-          {STEPS.map((label, i) => {
-            const state = stepStates[i];
-            const prevState = i > 0 ? stepStates[i - 1] : null;
+        {/*
+          LayoutGroup + layout on the wrapper means Motion tracks the container's
+          size and smoothly recenters it as steps are added.
+        */}
+        <LayoutGroup>
+          <motion.div
+            layout
+            className="flex flex-col items-start"
+            style={{ width: 222 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            {visibleSteps.map((s) => {
+              const prevState = s.index > 0 ? stepStates[s.index - 1] : null;
+              const showConnector =
+                s.index > 0 &&
+                prevState !== null &&
+                prevState.status !== "pending";
 
-            // Show connector above this step if previous step exists and is visible
-            const showConnector = i > 0 && prevState !== null && prevState.status !== "pending";
-
-            // Connector is green if both this step and previous are done
-            const connectorColor: "green" | "white" =
-              state.status === "done" && prevState?.status === "done"
-                ? "green"
-                : "white";
-
-            return (
-              <StepRow
-                key={label}
-                label={label}
-                status={state.status}
-                showConnectorAbove={showConnector}
-                connectorColor={connectorColor}
-                index={i}
-              />
-            );
-          })}
-        </div>
-      </div>
+              return (
+                <StepRow
+                  key={STEPS[s.index]}
+                  label={STEPS[s.index]}
+                  status={s.status}
+                  prevStatus={prevState?.status ?? "pending"}
+                  prevStartedAt={prevState?.startedAt ?? null}
+                  showConnector={showConnector}
+                />
+              );
+            })}
+          </motion.div>
+        </LayoutGroup>
+      </motion.div>
     </div>
   );
 }

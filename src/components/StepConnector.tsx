@@ -1,17 +1,43 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 
 interface StepConnectorProps {
-  /** "green" = both sides done, "white" = leading to active step */
-  color: "green" | "white";
-  visible?: boolean;
+  /** Timestamp (Date.now()) when the step above this connector became active */
+  stepStartedAt: number | null;
+  /** True once the step below this connector is done (turn all dashes green) */
+  done: boolean;
 }
 
-const DOTS = [0, 1, 2, 3];
+const NUM_DASHES = 4;
+const DASH_INTERVAL_MS = 1000; // 1 dash per second
 
-export default function StepConnector({ color, visible = true }: StepConnectorProps) {
-  const dotColor = color === "green" ? "#8eeda0" : "#ffffff";
+export default function StepConnector({ stepStartedAt, done }: StepConnectorProps) {
+  const [filledCount, setFilledCount] = useState(0);
+
+  useEffect(() => {
+    if (stepStartedAt === null) {
+      setFilledCount(0);
+      return;
+    }
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    for (let i = 0; i < NUM_DASHES; i++) {
+      const elapsed = Date.now() - stepStartedAt;
+      const targetDelay = (i + 1) * DASH_INTERVAL_MS;
+      const remaining = Math.max(0, targetDelay - elapsed);
+
+      timers.push(
+        setTimeout(() => {
+          setFilledCount(i + 1);
+        }, remaining)
+      );
+    }
+
+    return () => timers.forEach(clearTimeout);
+  }, [stepStartedAt]);
 
   return (
     <div
@@ -19,16 +45,29 @@ export default function StepConnector({ color, visible = true }: StepConnectorPr
       style={{ width: 24, height: 24, paddingLeft: 48, paddingRight: 48 }}
     >
       <div className="flex flex-col items-start shrink-0" style={{ gap: 3, width: 2 }}>
-        {DOTS.map((i) => (
-          <motion.div
-            key={i}
-            className="shrink-0 rounded-sm"
-            style={{ width: 1, height: 3, backgroundColor: dotColor }}
-            initial={{ opacity: 0, scaleY: 0 }}
-            animate={visible ? { opacity: 1, scaleY: 1 } : { opacity: 0, scaleY: 0 }}
-            transition={{ duration: 0.25, delay: i * 0.05, ease: "easeOut" }}
-          />
-        ))}
+        {Array.from({ length: NUM_DASHES }, (_, i) => {
+          const isFilled = i < filledCount;
+          const color = done ? "#8eeda0" : isFilled ? "#ffffff" : "rgba(255,255,255,0.2)";
+
+          return (
+            <motion.div
+              key={i}
+              className="shrink-0 rounded-sm"
+              style={{ width: 1, height: 3 }}
+              initial={{ opacity: 0, scaleY: 0 }}
+              animate={{
+                opacity: stepStartedAt !== null ? 1 : 0,
+                scaleY: stepStartedAt !== null ? 1 : 0,
+                backgroundColor: color,
+              }}
+              transition={{
+                opacity:         { duration: 0.25, delay: i * 0.06, ease: "easeOut" },
+                scaleY:          { duration: 0.25, delay: i * 0.06, ease: "easeOut" },
+                backgroundColor: { duration: 0.4, ease: "easeInOut" },
+              }}
+            />
+          );
+        })}
       </div>
     </div>
   );

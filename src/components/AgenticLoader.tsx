@@ -3,25 +3,14 @@
 import { motion } from "motion/react";
 
 /**
- * The 4×4 pixel grid loader icon from Figma.
- * Dots arranged in a bracket/corner pattern with varying opacities.
- * Animates with a wave/pulse effect when active.
+ * 3×3 grid loader — cells pulse from 0.06 → 1 → 0.06 opacity
+ * with an 80ms stagger across 9 cells (left-to-right, top-to-bottom).
  */
 
-const DOT_POSITIONS = [
-  { x: 0,  y: 0,  opacity: 0.8 },
-  { x: 6,  y: 0,  opacity: 0.6 },
-  { x: 12, y: 0,  opacity: 0.2 },
-  { x: 18, y: 0,  opacity: 0.1 },
-  { x: 0,  y: 6,  opacity: 0.8 },
-  { x: 18, y: 6,  opacity: 0.1 },
-  { x: 0,  y: 12, opacity: 0.8 },
-  { x: 18, y: 12, opacity: 0.1 },
-  { x: 0,  y: 18, opacity: 0.8 },
-  { x: 6,  y: 18, opacity: 0.6 },
-  { x: 12, y: 18, opacity: 0.2 },
-  { x: 18, y: 18, opacity: 0.1 },
-];
+const CELLS = Array.from({ length: 9 }, (_, i) => i);
+const CELL_SIZE = 8;
+const STAGGER_MS = 80;
+const DURATION_S = 1.4;
 
 interface AgenticLoaderProps {
   active?: boolean;
@@ -29,31 +18,35 @@ interface AgenticLoaderProps {
 
 export default function AgenticLoader({ active = true }: AgenticLoaderProps) {
   return (
-    <div className="relative shrink-0" style={{ width: 24, height: 24 }}>
-      {DOT_POSITIONS.map((dot, i) => (
+    <div
+      className="shrink-0 grid"
+      style={{
+        display: "grid",
+        gridTemplateColumns: `repeat(3, ${CELL_SIZE}px)`,
+        gridTemplateRows: `repeat(3, ${CELL_SIZE}px)`,
+        width: 24,
+        height: 24,
+      }}
+    >
+      {CELLS.map((i) => (
         <motion.div
           key={i}
-          className="absolute rounded-none"
           style={{
-            width: 6,
-            height: 6,
-            left: dot.x,
-            top: dot.y,
-            backgroundColor: "rgba(255,255,255,1)",
+            width: CELL_SIZE,
+            height: CELL_SIZE,
+            backgroundColor: "#f0f0ff",
           }}
           animate={
             active
-              ? {
-                  opacity: [dot.opacity, Math.min(dot.opacity + 0.4, 1), dot.opacity],
-                }
-              : { opacity: dot.opacity }
+              ? { opacity: [0.06, 1, 0.06] }
+              : { opacity: 0.06 }
           }
           transition={
             active
               ? {
-                  duration: 1.2,
+                  duration: DURATION_S,
                   repeat: Infinity,
-                  delay: (dot.x + dot.y) * 0.015,
+                  delay: (i * STAGGER_MS) / 1000,
                   ease: "easeInOut",
                 }
               : { duration: 0.3 }
