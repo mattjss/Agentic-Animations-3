@@ -5,6 +5,7 @@ import { motion, LayoutGroup } from "motion/react";
 import AgenticLoader from "./AgenticLoader";
 import CheckIcon from "./CheckIcon";
 import StepConnector from "./StepConnector";
+import ShimmerText from "./ShimmerText";
 
 const STEPS = [
   "Gathering information",
@@ -21,7 +22,7 @@ interface StepState {
   startedAt: number | null;
 }
 
-const PHASE_DURATION_MS = 4000;
+const PHASE_DURATION_MS = 5000;
 const INITIAL_DELAY_MS = 1500;
 const STEP_DELAYS_MS = STEPS.map((_, i) => INITIAL_DELAY_MS + PHASE_DURATION_MS * i);
 const COMPLETE_AT_MS = STEP_DELAYS_MS[STEPS.length - 1] + PHASE_DURATION_MS;
@@ -63,18 +64,9 @@ function StepRow({ label, status, prevStatus, prevStartedAt, showConnector }: St
         ) : (
           <AgenticLoader active={isActive} />
         )}
-        <motion.p
-          className="shrink-0 whitespace-nowrap not-italic"
-          style={{
-            fontFamily: "'Fragment Mono', monospace",
-            fontSize: 14,
-            lineHeight: "20px",
-          }}
-          animate={{ color: isDone ? "#8eeda0" : "#ffffff" }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
-        >
+        <ShimmerText active={isActive} done={isDone}>
           {label}
-        </motion.p>
+        </ShimmerText>
       </div>
     </motion.div>
   );

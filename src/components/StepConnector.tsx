@@ -11,7 +11,7 @@ interface StepConnectorProps {
 }
 
 const NUM_DASHES = 4;
-const DASH_INTERVAL_MS = 1000; // 1 dash per second
+const DASH_INTERVAL_MS = 1250; // 4 dashes over 5s
 
 export default function StepConnector({ stepStartedAt, done }: StepConnectorProps) {
   const [filledCount, setFilledCount] = useState(0);
