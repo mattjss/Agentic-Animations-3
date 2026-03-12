@@ -8,10 +8,10 @@ import StepConnector from "./StepConnector";
 import MatrixScrambleText from "./MatrixScrambleText";
 
 const STEPS = [
-  "Gathering information",
-  "Processing",
-  "Planning",
-  "Synthesizing",
+  "Syncing state",
+  "Loading context",
+  "Processing query",
+  "Reasoning",
   "Complete",
 ] as const;
 
@@ -121,34 +121,106 @@ export default function LoadingSyncAnimation() {
     .map((s, i) => ({ ...s, index: i }))
     .filter((s) => s.status !== "pending");
 
+  const isComplete = stepStates[STEPS.length - 1].status === "done";
+
+  const hasActiveStep = stepStates.some((s) => s.status === "active");
+
   return (
     <div
       className="relative flex items-center justify-center"
       style={{ width: 800, height: 800, backgroundColor: "#000000" }}
     >
       <motion.div
-        className="relative flex items-center justify-center"
+        className="relative flex flex-col overflow-hidden"
         animate={{ opacity: fading ? 0 : 1 }}
         transition={{ duration: 0 }}
         style={{
           width: 420,
-          height: 420,
+          minHeight: 420,
           backgroundColor: "#000000",
-          border: "1px solid #111111",
+          border: "1px solid #1a1a1a",
           borderRadius: 16,
         }}
       >
-        {/*
-          LayoutGroup + layout on the wrapper means Motion tracks the container's
-          size and smoothly recenters it as steps are added.
-        */}
-        <LayoutGroup>
-          <motion.div
-            layout="position"
-            className="flex flex-col items-start"
-            style={{ width: 222, gap: 8 }}
-            transition={{ duration: 0.55, ease: [0.32, 0.72, 0, 1] }}
+        {/* Top-edge signal — kept per user preference */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 1,
+            background:
+              hasActiveStep || isComplete
+                ? `linear-gradient(90deg, transparent, #45eecc, transparent)`
+                : "transparent",
+            opacity: isComplete ? 0.6 : hasActiveStep ? 0.4 : 0,
+            transition: "opacity 0.4s ease",
+          }}
+        />
+
+        {/* Fixed header — process label + status, does not move with steps */}
+        <div
+          className="absolute left-0 right-0 flex items-center justify-between"
+          style={{
+            top: 20,
+            paddingLeft: 24,
+            paddingRight: 24,
+            fontFamily: "'Fragment Mono', monospace",
+            fontSize: 10,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+          }}
+        >
+          <span style={{ color: "rgba(255,255,255,0.35)" }}>Process</span>
+          <span
+            style={{
+              color: hasActiveStep ? "rgba(69,238,204,0.8)" : isComplete ? "rgba(69,238,204,0.6)" : "rgba(255,255,255,0.2)",
+              transition: "color 0.3s ease",
+            }}
           >
+            {isComplete ? "Ready" : hasActiveStep ? "Syncing" : "Idle"}
+          </span>
+        </div>
+
+        {/* Separator — subtle line between header and content */}
+        <div
+          style={{
+            position: "absolute",
+            top: 44,
+            left: 24,
+            right: 24,
+            height: 1,
+            backgroundColor: "rgba(255,255,255,0.06)",
+          }}
+        />
+
+        {/* Bottom-edge signal — mirrors top when complete for frame balance */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 1,
+            background: isComplete ? `linear-gradient(90deg, transparent, #45eecc, transparent)` : "transparent",
+            opacity: isComplete ? 0.35 : 0,
+            transition: "opacity 0.5s ease",
+          }}
+        />
+
+        {/* Steps — centered in remaining space, fixed top offset for header */}
+        <div
+          className="absolute inset-x-0 flex justify-center items-center"
+          style={{ top: 72, bottom: 32 }}
+        >
+          <LayoutGroup>
+            <motion.div
+              layout="position"
+              className="flex flex-col items-start justify-center"
+              style={{ width: 222, gap: 8, margin: "0 auto" }}
+              transition={{ duration: 0.55, ease: [0.32, 0.72, 0, 1] }}
+            >
             {visibleSteps.map((s) => {
               const prevState = s.index > 0 ? stepStates[s.index - 1] : null;
               const showConnector =
@@ -167,8 +239,9 @@ export default function LoadingSyncAnimation() {
                 />
               );
             })}
-          </motion.div>
-        </LayoutGroup>
+            </motion.div>
+          </LayoutGroup>
+        </div>
       </motion.div>
     </div>
   );

@@ -23,7 +23,7 @@ export default function CheckIcon({ visible = true }: CheckIconProps) {
       >
         <motion.path
           d="M1.5 7L6.5 12L16.5 2"
-          stroke="#8eeda0"
+          stroke="#45eecc"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"

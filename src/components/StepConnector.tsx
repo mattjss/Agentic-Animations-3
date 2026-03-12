@@ -47,7 +47,7 @@ export default function StepConnector({ stepStartedAt, done }: StepConnectorProp
       <div className="flex flex-col items-center shrink-0" style={{ gap: 3, width: 1 }}>
         {Array.from({ length: NUM_DASHES }, (_, i) => {
           const isFilled = i < filledCount;
-          const color = done ? "#8eeda0" : isFilled ? "#ffffff" : "rgba(255,255,255,0.2)";
+          const color = done ? "#45eecc" : isFilled ? "#ffffff" : "rgba(255,255,255,0.2)";
 
           return (
             <motion.div

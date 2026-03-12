@@ -12,6 +12,13 @@ const CELL_SIZE = 8;
 const STAGGER_MS = 80;
 const DURATION_S = 1.4;
 
+// Cyberpunk gradient: cyan → purple → magenta across the 3×3 grid
+const GRADIENT_COLORS = [
+  "#45eecc", "#5dd4d4", "#6bb8dc",
+  "#6a8ee8", "#855ae2", "#9a4ac8",
+  "#a845b8", "#a23993", "#a23993",
+];
+
 interface AgenticLoaderProps {
   active?: boolean;
 }
@@ -34,7 +41,7 @@ export default function AgenticLoader({ active = true }: AgenticLoaderProps) {
           style={{
             width: CELL_SIZE,
             height: CELL_SIZE,
-            backgroundColor: "#f0f0ff",
+            backgroundColor: GRADIENT_COLORS[i],
           }}
           animate={
             active

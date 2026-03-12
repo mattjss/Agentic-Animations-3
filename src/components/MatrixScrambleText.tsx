@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 const CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const SCRAMBLE_FRAMES = 1;
 const FRAME_MS = 6;
-const SHIMMER_DURATION_MS = 800;
+const SHIMMER_DURATION_MS = 900;
 
 interface MatrixScrambleTextProps {
   children: string;
@@ -91,9 +91,9 @@ export default function MatrixScrambleText({ children, active, done }: MatrixScr
   if (done) {
     return (
       <motion.span
-        style={{ ...baseStyle, color: "#8eeda0" }}
+        style={{ ...baseStyle, color: "#45eecc" }}
         initial={false}
-        animate={{ color: "#8eeda0" }}
+        animate={{ color: "#45eecc" }}
         transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
       >
         {children}
@@ -110,12 +110,12 @@ export default function MatrixScrambleText({ children, active, done }: MatrixScr
           color: "#ffffff",
           ...(isShimmering && {
             background:
-              "linear-gradient(90deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,1) 35%, rgba(255,255,255,1) 65%, rgba(255,255,255,0.25) 100%)",
-            backgroundSize: "300% 100%",
+              "linear-gradient(90deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.95) 25%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.95) 75%, rgba(255,255,255,0.15) 100%)",
+            backgroundSize: "200% 100%",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
-            animation: "shimmer-once 0.8s linear forwards",
+            animation: "shimmer-wave 0.9s ease-in-out forwards",
           }),
         }}
       >
